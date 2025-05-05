@@ -65,12 +65,12 @@ jobs:
 
         BODY=""
         if [ -n "$ADDED" ]; then
-          BODY+="\n### 新建的文件\n"
+          BODY+=\n### 新建的文件\n
           BODY+=$(process_files "$ADDED")
         fi
 
         if [ -n "$MODIFIED" ]; then
-          BODY+="\n### 更改的文件\n"
+          BODY+=\n### 更改的文件\n
           BODY+=$(process_files "$MODIFIED")
         fi
 
@@ -87,12 +87,12 @@ jobs:
 
         DETAIL_BODY=""
         if [ -n "$ADDED" ]; then
-          DETAIL_BODY+="\n# 新建的文件\n"
+          DETAIL_BODY+=\n# 新建的文件\n
           DETAIL_BODY+=$(process_detail "$ADDED")
         fi
 
         if [ -n "$MODIFIED" ]; then
-          DETAIL_BODY+="\n# 更改的文件\n"
+          DETAIL_BODY+=\n# 更改的文件\n
           DETAIL_BODY+=$(process_detail "$MODIFIED")
         fi
 
