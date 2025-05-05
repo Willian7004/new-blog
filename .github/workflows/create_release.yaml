@@ -58,32 +58,37 @@ jobs:
         run: |
           #!/bin/bash
           set -e
-
           IFS=$'\n'
-          added_files=()
-          modified_files=()
-
+          
+          # 使用环境文件存储文件列表
+          added_file_list=$(mktemp)
+          modified_file_list=$(mktemp)
+          
+          # 获取变化的文件
           while read -r line; do
             status=$(echo "$line" | cut -f1)
             file=$(echo "$line" | cut -f2)
             if [[ "$file" == static/* || "$file" == dynamic/* ]]; then
               case "$status" in
                 A)
-                  added_files+=("$file")
+                  echo "$file" >> "$added_file_list"
                   ;;
                 M)
-                  modified_files+=("$file")
+                  echo "$file" >> "$modified_file_list"
                   ;;
               esac
             fi
           done < <(git diff --name-status "$base_commit" HEAD -- static/ dynamic/)
 
-          echo "added_files=$(printf "%s\n" "${added_files[@]}")" >> $GITHUB_ENV
-          echo "modified_files=$(printf "%s\n" "${modified_files[@]}")" >> $GITHUB_ENV
-          echo "need_create_release=true" >> $GITHUB_ENV
-
-          if [ "${#added_files[@]}" -eq 0 ] && [ "${#modified_files[@]}" -eq 0 ] && [ "${prev_tag_exists}" = "true" ]; then
+          # 保存到环境变量（指向临时文件）
+          echo "added_file_list=$added_file_list" >> $GITHUB_ENV
+          echo "modified_file_list=$modified_file_list" >> $GITHUB_ENV
+          
+          # 检查是否需要创建release
+          if [ "$(wc -l < "$added_file_list")" -eq 0 ] && [ "$(wc -l < "$modified_file_list")" -eq 0 ] && [ "${prev_tag_exists}" = "true" ]; then
             echo "need_create_release=false" >> $GITHUB_ENV
+          else
+            echo "need_create_release=true" >> $GITHUB_ENV
           fi
 
       - name: Check need create release
@@ -122,14 +127,16 @@ jobs:
           echo "release_version=$release_version" >> $GITHUB_ENV
           echo "detail_version=$detail_version" >> $GITHUB_ENV
 
+          # 读取文件列表
+          mapfile -t added < "${added_file_list}"
+          mapfile -t modified < "${modified_file_list}"
+
           # 生成release body
-          added=(${env_added_files})
-          modified=(${env_modified_files})
           body=""
           detail_body=""
 
           # 处理新增文件
-          if [ ${#added[@]} -gt 0 ]; then
+          if [ "${#added[@]}" -gt 0 ]; then
             body+="### 新建的文件\n"
             detail_body+="# 新建的文件\n"
             for file in "${added[@]}"; do
@@ -141,7 +148,7 @@ jobs:
           fi
 
           # 处理修改文件
-          if [ ${#modified[@]} -gt 0 ]; then
+          if [ "${#modified[@]}" -gt 0 ]; then
             body+="### 更改的文件\n"
             detail_body+="# 更改的文件\n"
             for file in "${modified[@]}"; do
