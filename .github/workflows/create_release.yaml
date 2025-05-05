@@ -58,10 +58,11 @@ jobs:
         run: |
           #!/bin/bash
           set -e
+
+          IFS=$'\n'
           added_files=()
           modified_files=()
-          IFS=$'\n'
-          # 获取变化的文件
+
           while read -r line; do
             status=$(echo "$line" | cut -f1)
             file=$(echo "$line" | cut -f2)
@@ -77,10 +78,10 @@ jobs:
             fi
           done < <(git diff --name-status "$base_commit" HEAD -- static/ dynamic/)
 
-          # 保存到环境变量
-          echo "added_files=${added_files[*]}" >> $GITHUB_ENV
-          echo "modified_files=${modified_files[*]}" >> $GITHUB_ENV
+          echo "added_files=$(printf "%s\n" "${added_files[@]}")" >> $GITHUB_ENV
+          echo "modified_files=$(printf "%s\n" "${modified_files[@]}")" >> $GITHUB_ENV
           echo "need_create_release=true" >> $GITHUB_ENV
+
           if [ "${#added_files[@]}" -eq 0 ] && [ "${#modified_files[@]}" -eq 0 ] && [ "${prev_tag_exists}" = "true" ]; then
             echo "need_create_release=false" >> $GITHUB_ENV
           fi
