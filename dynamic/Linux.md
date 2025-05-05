@@ -152,7 +152,7 @@ ghcr.io/open-webui/open-webui:main
 
 使用图形界面时，通过Xtreme Download Manager进行下载，能实现资源嗅探和多线程下载等功能。
 
-通过终端进行远程连接时，目前会用到两个应用：
+由于前面提到的安卓连接xrdp延时过长的问题，需要通过终端进行远程连接，目前会用到以下两个下载应用：
 
 **1.hfd，由hf-mirror开发，用于下载AI模型和数据集：**\
 获取：
