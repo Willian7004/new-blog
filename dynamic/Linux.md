@@ -148,7 +148,7 @@ ghcr.io/open-webui/open-webui:main
 
 ##### 下载服务器
 
-由于百度网盘Linux版没有p2p加速,wine版本不好用。而阿里云盘速度进一步下降，目前不在Linux使用网盘客户端。
+由于百度网盘Linux版没有p2p加速且wine版本不能正常运行，阿里云盘官方速度只略高于1mb/s且第三方客户端更慢，目前不在Linux使用网盘客户端。
 
 使用图形界面时，通过Xtreme Download Manager进行下载，能实现资源嗅探和多线程下载等功能。
 
