@@ -21,10 +21,10 @@ jobs:
       id: setup
       run: |
         RELEASE_DATE=$(TZ=Asia/Shanghai date +%Y%m%d)
-        RELEASES=$(gh api repos/${{ github.repository }}/releases --jq ".[] | select(.name | startswith(\"v$RELEASE_DATE-post\")) | .name" | wc -l)
+        # 关键修改：添加 --paginate 参数获取全部分页数据
+        RELEASES=$(gh api --paginate repos/${{ github.repository }}/releases --jq ".[] | select(.name | startswith(\"v$RELEASE_DATE-post\")) | .name" | wc -l)
         POST_NUMBER=$((RELEASES + 1))
-        TAG_NAME="v$RELEASE_DATE-post$POST_NUMBER"
-        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+        echo "TAG_NAME=v$RELEASE_DATE-post$POST_NUMBER" >> $GITHUB_ENV
         echo "DETAIL_TAG=$TAG_NAME-detail" >> $GITHUB_ENV
 
     - name: Get changed files
