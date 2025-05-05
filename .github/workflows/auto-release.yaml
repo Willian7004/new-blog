@@ -1,0 +1,116 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'static/**'
+      - 'dynamic/**'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Setup environment
+      id: setup
+      run: |
+        RELEASE_DATE=$(TZ=Asia/Shanghai date +%Y%m%d)
+        RELEASES=$(gh api repos/${{ github.repository }}/releases --jq ".[] | select(.name | startswith(\"v$RELEASE_DATE-post\")) | .name" | wc -l)
+        POST_NUMBER=$((RELEASES + 1))
+        TAG_NAME="v$RELEASE_DATE-post$POST_NUMBER"
+        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+        echo "DETAIL_TAG=$TAG_NAME-detail" >> $GITHUB_ENV
+
+    - name: Get changed files
+      id: changes
+      run: |
+        if [ ${{ github.event.before }} == "0000000000000000000000000000000000000000" ]; then
+          COMMIT_RANGE="4b825dc642cb6eb9a060e54bf8d69288fbee4904..HEAD"
+        else
+          COMMIT_RANGE="${{ github.event.before }}..${{ github.sha }}"
+        fi
+
+        ADDED=$(git diff --diff-filter=A --name-only $COMMIT_RANGE -- 'static/**' 'dynamic/**' --no-renames)
+        MODIFIED=$(git diff --diff-filter=M --name-only $COMMIT_RANGE -- 'static/**' 'dynamic/**' --no-renames)
+
+        # 使用分隔符处理多行内容
+        echo "ADDED<<EOF" >> $GITHUB_ENV
+        echo "$ADDED" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+        echo "MODIFIED<<EOF" >> $GITHUB_ENV
+        echo "$MODIFIED" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+    - name: Generate release body
+      id: generate-body
+      run: |
+        process_files() {
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
+              echo "- [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)"
+            fi
+          done <<< "$1"
+        }
+
+        BODY=""
+        if [ -n "$ADDED" ]; then
+          BODY+="\n### 新建的文件\n"
+          BODY+=$(process_files "$ADDED")
+        fi
+
+        if [ -n "$MODIFIED" ]; then
+          BODY+="\n### 更改的文件\n"
+          BODY+=$(process_files "$MODIFIED")
+        fi
+
+        process_detail() {
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
+              CONTENT=$(awk 'NR>1 {print}' "$file" | sed 's/\\/\\\\/g')
+              echo -e "# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\`\`\`\n$CONTENT\n\`\`\`\n"
+            fi
+          done <<< "$1"
+        }
+
+        DETAIL_BODY=""
+        if [ -n "$ADDED" ]; then
+          DETAIL_BODY+="\n# 新建的文件\n"
+          DETAIL_BODY+=$(process_detail "$ADDED")
+        fi
+
+        if [ -n "$MODIFIED" ]; then
+          DETAIL_BODY+="\n# 更改的文件\n"
+          DETAIL_BODY+=$(process_detail "$MODIFIED")
+        fi
+
+        # 修复点：直接使用多行文本，避免JSON转义
+        echo "BODY<<EOF" >> $GITHUB_ENV
+        echo -e "$BODY" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+        echo "DETAIL_BODY<<EOF" >> $GITHUB_ENV
+        echo -e "$DETAIL_BODY" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}
+        name: ${{ env.TAG_NAME }}
+        body: ${{ env.BODY }}
+
+    - name: Create Detail Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.DETAIL_TAG }}
+        name: ${{ env.DETAIL_TAG }}
+        body: ${{ env.DETAIL_BODY }}
