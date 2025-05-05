@@ -39,7 +39,6 @@ jobs:
         ADDED=$(git diff --diff-filter=A --name-only $COMMIT_RANGE -- 'static/**' 'dynamic/**' --no-renames)
         MODIFIED=$(git diff --diff-filter=M --name-only $COMMIT_RANGE -- 'static/**' 'dynamic/**' --no-renames)
 
-        # 使用分隔符处理多行内容
         echo "ADDED<<EOF" >> $GITHUB_ENV
         echo "$ADDED" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
@@ -75,17 +74,16 @@ jobs:
           while IFS= read -r file; do
             if [ -f "$file" ]; then
               TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
-              # 处理内容：跳过第一行标题，转义反斜杠，并删除末尾的换行符
-              CONTENT=$(awk 'NR>1 {print}' "$file" | sed 's/\\/\\\\/g' | sed -z '$ s/\n$//')
-              # 调整Markdown格式，标题后添加空行，代码块闭合前无多余换行
-              echo -e "# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\n\`\`\`\n$CONTENT\n\`\`\`"
+              CONTENT=$(awk 'NR>1 {print}' "$file")
+              # 调整代码块格式，移除末尾多余换行
+              echo -e "# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\`\`\`\n$CONTENT\n\`\`\`"
             fi
           done <<< "$1"
         }
 
         DETAIL_BODY=""
         if [ -n "$ADDED" ]; then
-          DETAIL_BODY+="\n# 新建的文件\n"
+          DETAIL_BODY+="# 新建的文件\n"
           DETAIL_BODY+=$(process_detail "$ADDED")
         fi
 
@@ -94,7 +92,7 @@ jobs:
           DETAIL_BODY+=$(process_detail "$MODIFIED")
         fi
 
-        # 使用EOF块安全地传递多行内容
+        # 使用EOF保留格式，避免转义问题
         echo "BODY<<EOF" >> $GITHUB_ENV
         echo -e "$BODY" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
