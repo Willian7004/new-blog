@@ -76,7 +76,7 @@ jobs:
               TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
               CONTENT=$(awk 'NR>1 {print}' "$file")
               # 调整代码块格式，移除末尾多余换行
-              echo -e "# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\`\`\`\n$CONTENT\n\`\`\`"
+              echo -e "# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\n$CONTENT\n\`\`\`"
             fi
           done <<< "$1"
         }
