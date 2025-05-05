@@ -75,8 +75,10 @@ jobs:
           while IFS= read -r file; do
             if [ -f "$file" ]; then
               TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
-              CONTENT=$(awk 'NR>1 {print}' "$file" | sed 's/\\/\\\\/g')
-              echo -e "# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\`\`\`\n$CONTENT\n\`\`\`\n"
+              # 处理内容：跳过第一行标题，转义反斜杠，并删除末尾的换行符
+              CONTENT=$(awk 'NR>1 {print}' "$file" | sed 's/\\/\\\\/g' | sed -z '$ s/\n$//')
+              # 调整Markdown格式，标题后添加空行，代码块闭合前无多余换行
+              echo -e "# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\n\`\`\`\n$CONTENT\n\`\`\`"
             fi
           done <<< "$1"
         }
@@ -92,7 +94,7 @@ jobs:
           DETAIL_BODY+=$(process_detail "$MODIFIED")
         fi
 
-        # 修复点：直接使用多行文本，避免JSON转义
+        # 使用EOF块安全地传递多行内容
         echo "BODY<<EOF" >> $GITHUB_ENV
         echo -e "$BODY" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
