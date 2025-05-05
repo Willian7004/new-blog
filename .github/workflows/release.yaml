@@ -1,0 +1,113 @@
+name: Auto Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'static/**'
+      - 'dynamic/**'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Setup environment
+      id: setup
+      run: |
+        # 设置UTC+8时区
+        RELEASE_DATE=$(TZ=Asia/Shanghai date +%Y%m%d)
+        # 获取当天release次数
+        RELEASES=$(gh api repos/${{ github.repository }}/releases --jq ".[] | select(.name | startswith(\"v$RELEASE_DATE-post\")) | .name" | wc -l)
+        POST_NUMBER=$((RELEASES + 1))
+        TAG_NAME="v$RELEASE_DATE-post$POST_NUMBER"
+        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+        echo "DETAIL_TAG=$TAG_NAME-detail" >> $GITHUB_ENV
+
+    - name: Get changed files
+      id: changes
+      run: |
+        # 获取变更文件列表
+        if [ ${{ github.event.before }} == "0000000000000000000000000000000000000000" ]; then
+          # 初次提交时比较空树
+          COMMIT_RANGE=$(git rev-list --max-parents=0 HEAD)
+          FILES=$(git diff --name-only $COMMIT_RANGE -- 'static/*' 'dynamic/*')
+        else
+          COMMIT_RANGE="${{ github.event.before }}..${{ github.sha }}"
+          FILES=$(git diff --name-only $COMMIT_RANGE -- 'static/*' 'dynamic/*' | grep -E 'static/|dynamic/')
+        fi
+
+        # 分类新增和修改文件
+        ADDED=$(git diff --diff-filter=A --name-only $COMMIT_RANGE -- 'static/*' 'dynamic/*')
+        MODIFIED=$(git diff --diff-filter=M --name-only $COMMIT_RANGE -- 'static/*' 'dynamic/*')
+        
+        echo "ADDED_FILES=${ADDED}" >> $GITHUB_ENV
+        echo "MODIFIED_FILES=${MODIFIED}" >> $GITHUB_ENV
+
+    - name: Generate release body
+      id: generate-body
+      run: |
+        # 生成标准release内容
+        BODY=""
+        if [ -n "$ADDED_FILES" ]; then
+          BODY+="\n### 新建的文件\n"
+          while IFS= read -r file; do
+            TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
+            BODY+="- [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n"
+          done <<< "$ADDED_FILES"
+        fi
+
+        if [ -n "$MODIFIED_FILES" ]; then
+          BODY+="\n### 更改的文件\n"
+          while IFS= read -r file; do
+            TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
+            BODY+="- [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n"
+          done <<< "$MODIFIED_FILES"
+        fi
+
+        # 生成详细版内容
+        DETAIL_BODY=""
+        if [ -n "$ADDED_FILES" ]; then
+          DETAIL_BODY+="\n# 新建的文件\n"
+          while IFS= read -r file; do
+            TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
+            CONTENT=$(sed -e '1d' "$file" | sed 's/$/\\n/' | tr -d '\n')
+            DETAIL_BODY+="# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\`\`\`\n$CONTENT\n\`\`\`\n"
+          done <<< "$ADDED_FILES"
+        fi
+
+        if [ -n "$MODIFIED_FILES" ]; then
+          DETAIL_BODY+="\n# 更改的文件\n"
+          while IFS= read -r file; do
+            TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
+            CONTENT=$(sed -e '1d' "$file" | sed 's/$/\\n/' | tr -d '\n')
+            DETAIL_BODY+="# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\`\`\`\n$CONTENT\n\`\`\`\n"
+          done <<< "$MODIFIED_FILES"
+        fi
+
+        echo "BODY<<EOF" >> $GITHUB_ENV
+        echo -e "$BODY" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+        echo "DETAIL_BODY<<EOF" >> $GITHUB_ENV
+        echo -e "$DETAIL_BODY" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}
+        name: ${{ env.TAG_NAME }}
+        body: ${{ env.BODY }}
+
+    - name: Create Detail Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.DETAIL_TAG }}
+        name: ${{ env.DETAIL_TAG }}
+        body: ${{ env.DETAIL_BODY }}

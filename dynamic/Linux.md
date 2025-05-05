@@ -15,6 +15,9 @@ Linux Mint也有一些缺点：\
 2.系统自带的smb服务器功能存在权限问题，如果需要开源smb服务器推荐iStoreOS或者NAS系统。\
 3.外观不算顶尖，个人感觉外观最好的是Kali Linux的Gnome版本，轻量化系统外观最好的是Solus Linux的Budgie版本（由于这两个发行版相应桌面环境的图片不太常见，这里提供图片）。
 
+![kali](https://github.com/Willian7004/new-blog/blob/main/files/dynamic/kali.jpg?raw=true)
+![solus](https://github.com/Willian7004/new-blog/blob/main/files/dynamic/solus.jpg?raw=true)
+
 基本配置和软件使用情况：\
 1.试过一些主题，但最后还是继续使用Mint-Y，因为细节和一致性较好且比较现代化。\
 2.浏览器使用Vivaldi，在低配设备流畅度高，同步功能比Firefox好用。\
