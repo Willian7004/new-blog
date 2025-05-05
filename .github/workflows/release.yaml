@@ -20,9 +20,7 @@ jobs:
     - name: Setup environment
       id: setup
       run: |
-        # 设置UTC+8时区
         RELEASE_DATE=$(TZ=Asia/Shanghai date +%Y%m%d)
-        # 获取当天release次数
         RELEASES=$(gh api repos/${{ github.repository }}/releases --jq ".[] | select(.name | startswith(\"v$RELEASE_DATE-post\")) | .name" | wc -l)
         POST_NUMBER=$((RELEASES + 1))
         TAG_NAME="v$RELEASE_DATE-post$POST_NUMBER"
@@ -32,71 +30,75 @@ jobs:
     - name: Get changed files
       id: changes
       run: |
-        # 获取变更文件列表
+        # 修正1：使用空树哈希处理初次提交
         if [ ${{ github.event.before }} == "0000000000000000000000000000000000000000" ]; then
-          # 初次提交时比较空树
-          COMMIT_RANGE=$(git rev-list --max-parents=0 HEAD)
-          FILES=$(git diff --name-only $COMMIT_RANGE -- 'static/*' 'dynamic/*')
+          COMMIT_RANGE="4b825dc642cb6eb9a060e54bf8d69288fbee4904..HEAD"  # Git空树哈希
         else
           COMMIT_RANGE="${{ github.event.before }}..${{ github.sha }}"
-          FILES=$(git diff --name-only $COMMIT_RANGE -- 'static/*' 'dynamic/*' | grep -E 'static/|dynamic/')
         fi
 
-        # 分类新增和修改文件
-        ADDED=$(git diff --diff-filter=A --name-only $COMMIT_RANGE -- 'static/*' 'dynamic/*')
-        MODIFIED=$(git diff --diff-filter=M --name-only $COMMIT_RANGE -- 'static/*' 'dynamic/*')
-        
-        echo "ADDED_FILES=${ADDED}" >> $GITHUB_ENV
-        echo "MODIFIED_FILES=${MODIFIED}" >> $GITHUB_ENV
+        # 修正2：使用**匹配子目录，添加--no-renames避免重命名误判
+        ADDED=$(git diff --diff-filter=A --name-only $COMMIT_RANGE -- 'static/**' 'dynamic/**' --no-renames)
+        MODIFIED=$(git diff --diff-filter=M --name-only $COMMIT_RANGE -- 'static/**' 'dynamic/**' --no-renames)
+
+        # 修正3：多行变量处理
+        echo "ADDED<<EOF" >> $GITHUB_ENV
+        echo "$ADDED" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+        echo "MODIFIED<<EOF" >> $GITHUB_ENV
+        echo "$MODIFIED" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
 
     - name: Generate release body
       id: generate-body
       run: |
-        # 生成标准release内容
+        # 修正4：文件存在性检查
+        process_files() {
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
+              echo "- [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)"
+            fi
+          done <<< "$1"
+        }
+
         BODY=""
-        if [ -n "$ADDED_FILES" ]; then
+        if [ -n "$ADDED" ]; then
           BODY+="\n### 新建的文件\n"
-          while IFS= read -r file; do
-            TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
-            BODY+="- [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n"
-          done <<< "$ADDED_FILES"
+          BODY+=$(process_files "$ADDED")
         fi
 
-        if [ -n "$MODIFIED_FILES" ]; then
+        if [ -n "$MODIFIED" ]; then
           BODY+="\n### 更改的文件\n"
-          while IFS= read -r file; do
-            TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
-            BODY+="- [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n"
-          done <<< "$MODIFIED_FILES"
+          BODY+=$(process_files "$MODIFIED")
         fi
 
-        # 生成详细版内容
+        # 修正5：保留文件换行符
+        process_detail() {
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
+              CONTENT=$(awk 'NR>1 {print}' "$file" | sed 's/\\/\\\\/g')
+              echo -e "# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\`\`\`\n$CONTENT\n\`\`\`\n"
+            fi
+          done <<< "$1"
+        }
+
         DETAIL_BODY=""
-        if [ -n "$ADDED_FILES" ]; then
+        if [ -n "$ADDED" ]; then
           DETAIL_BODY+="\n# 新建的文件\n"
-          while IFS= read -r file; do
-            TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
-            CONTENT=$(sed -e '1d' "$file" | sed 's/$/\\n/' | tr -d '\n')
-            DETAIL_BODY+="# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\`\`\`\n$CONTENT\n\`\`\`\n"
-          done <<< "$ADDED_FILES"
+          DETAIL_BODY+=$(process_detail "$ADDED")
         fi
 
-        if [ -n "$MODIFIED_FILES" ]; then
+        if [ -n "$MODIFIED" ]; then
           DETAIL_BODY+="\n# 更改的文件\n"
-          while IFS= read -r file; do
-            TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
-            CONTENT=$(sed -e '1d' "$file" | sed 's/$/\\n/' | tr -d '\n')
-            DETAIL_BODY+="# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\`\`\`\n$CONTENT\n\`\`\`\n"
-          done <<< "$MODIFIED_FILES"
+          DETAIL_BODY+=$(process_detail "$MODIFIED")
         fi
 
-        echo "BODY<<EOF" >> $GITHUB_ENV
-        echo -e "$BODY" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-
-        echo "DETAIL_BODY<<EOF" >> $GITHUB_ENV
-        echo -e "$DETAIL_BODY" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
+        # 使用jq转义特殊字符
+        echo "BODY=$(echo -e "$BODY" | jq -Rs .)" >> $GITHUB_ENV
+        echo "DETAIL_BODY=$(echo -e "$DETAIL_BODY" | jq -Rs .)" >> $GITHUB_ENV
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
