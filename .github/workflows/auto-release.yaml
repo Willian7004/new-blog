@@ -1,4 +1,5 @@
 name: Auto Release
+
 on:
   push:
     branches:
@@ -10,7 +11,6 @@ on:
 jobs:
   create-release:
     runs-on: ubuntu-latest
-    retries: 3  # 添加重试逻辑，处理并发冲突
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -20,19 +20,9 @@ jobs:
     - name: Setup environment
       id: setup
       run: |
-        # 获取当前日期（上海时区）
         RELEASE_DATE=$(TZ=Asia/Shanghai date +%Y%m%d)
-        # 计算现有主发布数量（排除draft和detail标签）
-        COUNT=$(gh api /repos/${{ github.repository }}/releases \
-          --paginate \
-          --method GET \
-          --jq "[.[] | select(
-            .name | startswith(\"v$RELEASE_DATE-post\") \
-            and (.name | test(\"-detail$\") | not) \
-            and (.draft == false)
-          )] | length" 2>/dev/null || echo 0)
-
-        POST_NUMBER=$((COUNT + 1))
+        RELEASES=$(gh api repos/${{ github.repository }}/releases --jq ".[] | select(.name | startswith(\"v$RELEASE_DATE-post\")) | .name" | wc -l)
+        POST_NUMBER=$((RELEASES + 1))
         TAG_NAME="v$RELEASE_DATE-post$POST_NUMBER"
         echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
         echo "DETAIL_TAG=$TAG_NAME-detail" >> $GITHUB_ENV
@@ -40,21 +30,19 @@ jobs:
     - name: Get changed files
       id: changes
       run: |
-        # 处理提交范围的计算
-        if [ "$GITHUB_EVENT_BEFORE" == "0000000000000000000000000000000000000000" ]; then
+        if [ ${{ github.event.before }} == "0000000000000000000000000000000000000000" ]; then
           COMMIT_RANGE="4b825dc642cb6eb9a060e54bf8d69288fbee4904..HEAD"
         else
-          COMMIT_RANGE="${GITHUB_EVENT_BEFORE}..${GITHUB_SHA}"
+          COMMIT_RANGE="${{ github.event.before }}..${{ github.sha }}"
         fi
 
-        # 获取修改和新增的文件列表
         ADDED=$(git diff --diff-filter=A --name-only $COMMIT_RANGE -- 'static/**' 'dynamic/**' --no-renames)
         MODIFIED=$(git diff --diff-filter=M --name-only $COMMIT_RANGE -- 'static/**' 'dynamic/**' --no-renames)
 
-        # 定义环境变量存储结果
         echo "ADDED<<EOF" >> $GITHUB_ENV
         echo "$ADDED" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
+
         echo "MODIFIED<<EOF" >> $GITHUB_ENV
         echo "$MODIFIED" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
@@ -62,49 +50,56 @@ jobs:
     - name: Generate release body
       id: generate-body
       run: |
-        # 定义处理文件内容的辅助函数
         process_files() {
           while IFS= read -r file; do
             if [ -f "$file" ]; then
-              # 提取标题
               TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
-              # 构建基本的markdown链接
               echo "- [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)"
             fi
           done <<< "$1"
         }
 
-        # 构建普通Release的正文
         BODY=""
-        [ -n "$ADDED" ] && BODY+="### 新建的文件\n$(process_files "$ADDED")"
-        [ -n "$MODIFIED" ] && BODY+=$'\n### 更改的文件\n$(process_files "$MODIFIED")'
+        if [ -n "$ADDED" ]; then
+          BODY+="\n### 新建的文件\n"
+          BODY+=$(process_files "$ADDED")
+        fi
 
-        # 定义更详细的内容构建函数
+        if [ -n "$MODIFIED" ]; then
+          BODY+="\n### 更改的文件\n"
+          BODY+=$(process_files "$MODIFIED")
+        fi
+
         process_detail() {
           while IFS= read -r file; do
             if [ -f "$file" ]; then
               TITLE=$(head -n 1 "$file" | sed -n 's/^# \(.*\)$/\1/p')
-              CONTENT=$(awk 'NR>1 {print}' "$file" | sed 's/^\s*//; s/\s*$//')
-              echo "### $TITLE"  # 使用标题分隔
-              echo ""
-              echo "文件路径： [$file]"
-              echo ""
-              echo "具体内容："
-              echo "```"
-              echo "$CONTENT"
-              echo "```"
+              CONTENT=$(awk 'NR>1 {print}' "$file")
+              # 调整代码块格式，移除末尾多余换行
+              echo -e "# [$TITLE](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/$file)\n\n$CONTENT\n\`\`\`"
             fi
           done <<< "$1"
         }
 
-        # 构建详细版的正文
         DETAIL_BODY=""
-        [ -n "$ADDED" ] && DETAIL_BODY+="# 新建的文件\n$(process_detail "$ADDED")"
-        [ -n "$MODIFIED" ] && DETAIL_BODY+=$'\n# 更改的文件\n$(process_detail "$MODIFIED")'
+        if [ -n "$ADDED" ]; then
+          DETAIL_BODY+="# 新建的文件\n"
+          DETAIL_BODY+=$(process_detail "$ADDED")
+        fi
 
-        # 使用EOF格式存储，防止特殊符号问题
-        echo "BODY<<EOF" >> $GITHUB_ENV && echo -e "$BODY" >> $GITHUB_ENV && echo "EOF" >> $GITHUB_ENV
-        echo "DETAIL_BODY<<EOF" >> $GITHUB_ENV && echo -e "$DETAIL_BODY" >> $GITHUB_ENV && echo "EOF" >> $GITHUB_ENV
+        if [ -n "$MODIFIED" ]; then
+          DETAIL_BODY+="\n# 更改的文件\n"
+          DETAIL_BODY+=$(process_detail "$MODIFIED")
+        fi
+
+        # 使用EOF保留格式，避免转义问题
+        echo "BODY<<EOF" >> $GITHUB_ENV
+        echo -e "$BODY" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+        echo "DETAIL_BODY<<EOF" >> $GITHUB_ENV
+        echo -e "$DETAIL_BODY" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
