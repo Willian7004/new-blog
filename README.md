@@ -44,9 +44,9 @@ streamlit run streamlit_app.py
 ##### 使用docker部署
 1.创建docker
 ```bash
-docker build . -t new-homepage
+docker build . -t new-blog
 ```
 2.运行docker
 ```bash
-docker run -p 8501:8501 new-homepage
+docker run -p 8501:8501 new-blog
 ```
