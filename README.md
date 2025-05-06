@@ -12,11 +12,10 @@
 1. Streamlit方便部署多项目，在容量占用较大的Gallery等项目的部署上相比GitHub Pages有一定优势。
 2. Streamlit使用Python，方便编写更多功能。语法简洁的特性无论是亲自编写或使用LLM辅助编写都有优势。
 3. Streamlit的UI框架比较优秀，在web技术栈中更优秀的框架较少。
-4. 结合GitHub action，把更改发送到release可以实现RSS。但目前的LLM无法正常实现这一功能，存在覆盖同一天其它release的问题，尚不确定能否保留每天第一个release。
 
 ##### 项目结构
 Streamlit程序：
-1. 主页包含项目说明和最近更新的内容。
+1. 主页包含项目说明和最近更新的内容。由于GitHub Actions没有成功创建，改用gitpython库，这一功能在Windows无法运行。
 2. “静态文章”部分可选月份，按发布日期显示文章。
 3. “动态文章”部分直接选择具体的文章，文章为相应主题的最新内容。
 
