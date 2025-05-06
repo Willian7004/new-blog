@@ -52,8 +52,7 @@ Linux Mint也有一些缺点：
 
 指令：
 ```bash
-docker run -d -p 8501:8501 -v /home/william/github/new-blog:/program --name blog --restart unless-stopped python:3.12-slim \
-/bin/bash -c "pip install streamlit -i https://mirrors.aliyun.com/pypi/simple/ && cd /program && streamlit run streamlit_app.py --server.port 8501"
+docker run -d -p 8501:8501 -v /home/william/github/new-blog:/program --name new-blog --restart unless-stopped python:3.12-slim /bin/bash -c "apt update && apt-get install -y git && pip install streamlit gitpython -i https://mirrors.aliyun.com/pypi/simple/ && cd /program && streamlit run streamlit_app.py --server.port 8501"
 ```
 
 **2.dpanel，用于图形化Docker管理：**
@@ -82,9 +81,6 @@ services:
       - type: bind
         source: /mnt/sda/Documents
         target: /media
-      - type: bind
-        source: /home/william/github/new-gallery/files
-        target: /files
 ```
 指令：
 `sudo docker compose -p jellyfin-server up`\
