@@ -85,11 +85,11 @@ with tempfile.TemporaryDirectory() as temp_dir:
         # 显示结果
         if not files:
             st.warning("没有找到符合条件的文件")
-            return
 
-        for file in files:
-            with st.expander(file['title']):
-                st.markdown(file['content'], unsafe_allow_html=True)
+        else:
+            for file in files:
+                with st.expander(file['title']):
+                    st.markdown(file['content'], unsafe_allow_html=True)
 
     except Exception as e:
         st.error(f"操作失败：{str(e)}")
