@@ -1,6 +1,6 @@
 '''
 写一个streamlit程序，实现以下功能：
-1.使用gitpython库，获取 https://github.com/Willian7004/new-blog 仓库的static和dynamic文件夹中最近10个修改的文件，相同文件的修改只获取最新一次。
+1.使用gitpython库，获取 https://github.com/Willian7004/new-blog 仓库的static和dynamic文件夹中最近8个修改的文件，相同文件的修改只获取最新一次。
 2.在页面上创建st.expander，文字为上一步获取的文件的第一行内容，如果开头有“#”则去掉，展开后使用st.markdown显示文件的完整内容,并设置unsafe_allow_html=True。按修改时间从新到旧的顺序显示。
 '''
 import streamlit as st
@@ -46,10 +46,10 @@ def get_file_contents(repo_path):
                         'file_path': file_path
                     }
 
-    # 按修改时间排序并取前10个
+    # 按修改时间排序并取前8个
     sorted_files = sorted(files_dict.values(), 
                         key=lambda x: x['commit_time'], 
-                        reverse=True)[:10]
+                        reverse=True)[:8]
 
     # 提取文件内容
     file_contents = []
