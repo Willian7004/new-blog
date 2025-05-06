@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 with st.expander("页面说明"):
     st.title("动态文章")
-    st.write("本页面展示内容根据相应话题动态调整的文章，在侧边栏选择文章，文章内容在下方显示。文章主要包括我使用一些软硬件的体验，相比之前的blog缩减了一些不常更新的话题。")
+    st.write("本页面展示内容根据相应话题动态调整的文章，在侧边栏选择文章，文章内容在下方显示。文章主要包括我使用一些软硬件的体验，相比之前的blog缩减了一些不常更新的以及不再关注的话题。")
 def read_md_file(file_path):
     """读取Markdown文件内容"""
     with open(file_path, 'r', encoding='utf-8') as f:
