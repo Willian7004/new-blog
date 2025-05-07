@@ -22,7 +22,7 @@ Streamlit程序：
 目录结构：
 1. “静态文章”部分在static文件夹并按月份创建子文件夹，“动态文章”部分在dynamic文件夹。在仓库内可以直接按这一目录阅读。
 2. streamlit_app.py和pages文件夹为程序，开头用多行注释记录使用LLM辅助创建相应文件的提示词。
-3. files文件夹与文章文件夹对应的部分用于保存文章引用的媒体文件，files内的xlsx文件夹用于把xlsx表格转换为markdown表格以便填入文章，files内的md文件夹存储图片较多的md文件以解决跨域访问限制，在去掉图片的版本中有指向这一版本的链接。
+3. files文件夹与文章文件夹对应的部分用于保存文章引用的媒体文件，files内的xlsx文件夹用于把xlsx表格转换为markdown表格以便填入文章，files内的md文件夹存储因各种原因不直接添加到页面上的文章的.md文件。
 
 ##### 其它说明
 1. 本项目已部署到Streamlit Cloud，域名为https://willian7004-new-blog.streamlit.app/ 
