@@ -188,3 +188,21 @@ cd /mnt/sda/Documents/Download/hfd
 `nohub aria2c https://hf-mirror.com/deepseek-ai/DeepSeek-V3-0324/resolve/main/README.md?download=true`\
 查看后台任务（仅在当前SSH有效）：`jobs -l`\
 全局检查进程：`ps aux | grep aria2c`
+
+### 未采用的软件
+
+我了解过其它一些Linux优化措施和软件，但因为一些原因没有采用。
+
+##### 透明终端与终端应用美化
+
+透明终端是比较常见的美化方案，但我个人更注重开箱即用，就没有进行这类配置。目前Kali Linux在有Kali主题的桌面环境中也是透明终端。
+
+终端应用讨论比较多的是Vim，常见的美化方法是添加路径显示和分屏实现类似于IDE的功能，也可以进行定制对其它用途进行优化。
+
+##### 云原生软件
+
+目前大部分工具类应用是桌面应用而非web应用，但不少类型的应用有web版本。比如用于文档编辑的OnlyOffice，用于代码编辑的CodeServer和用于协作的NextCloud。
+
+我没有部署这类应用的原因如下：
+1. 相比集中存储，考虑外出使用等情况，我更注重各设备的单独运行效果。
+2. 通过挂载网络存储器，可以实现在本地编辑服务器上的内容。
