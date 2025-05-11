@@ -17,6 +17,14 @@ Linux Mint也有一些缺点：
 ![kali](https://github.com/Willian7004/new-blog/blob/main/files/dynamic/kali.jpg?raw=true)
 ![solus](https://github.com/Willian7004/new-blog/blob/main/files/dynamic/solus.jpg?raw=true)
 
+更新：
+
+Solus Linux的主题实际上是使用了materia主题包和papirus图标包，可以用于其它不少发行版，在Linux Mint安装的效果如下图，还是比Solus Linux差一些。
+
+<center class="half">
+    <img src="https://github.com/Willian7004/new-blog/blob/main/files/dynamic/materia.jpg?raw=true" width="500"/>
+</center>
+
 基本配置和软件使用情况：
 1. 试过一些主题，但最后还是继续使用Mint-Y，因为细节和一致性较好且比较现代化。
 2. 浏览器使用Vivaldi，在低配设备流畅度高，同步功能比Firefox好用。
