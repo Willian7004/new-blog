@@ -66,7 +66,7 @@
 5. KTransformer注重异构计算，长上下文和并发速度相比CPU部署有一定优势。
 
 移动端：\
-不少应用来源与其它推理框架，目前使用MNN Chat，对支持的模型类型相对较多。
+不少应用来源与其它推理框架，目前使用MNN Chat，可能是唯一对Omni模型支持较好的推理框架，但桌面端还没有完全适配（参考 https://github.com/alibaba/MNN/issues/3520 ）。
 
 ##### 本地部署情况
 
@@ -77,7 +77,7 @@
 
 手机配置为骁龙8gen1+8g内存，使用MNN Chat。移动端部署情况如下：
 1. Qwen3 4b用于通用任务。
-2. Qwen2.5 vl 3b用于多模态任务。
+2. Qwen2.5 vl 3b用于多模态任务（运行3b Omni内存不足）。
 3. Stable Diffusion1.5用于绘画任务。
 
 ##### api使用情况
