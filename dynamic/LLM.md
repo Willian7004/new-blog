@@ -83,8 +83,8 @@
 
 手机配置为骁龙8gen1+8g内存，使用MNN Chat。移动端部署情况如下：
 1. Qwen3 4b用于通用任务。
-2. Qwen2.5 vl 3b用于多模态任务（运行3b Omni内存不足）。
-3. Stable Diffusion1.5用于绘画任务。
+2. Qwen2.5 vl 3b用于多模态任务。
+3. Qwen2.5 Omni 3b用于有语音输入的任务，TTS暂时不能正常运行。
 
 ##### api使用情况
 
