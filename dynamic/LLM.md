@@ -26,14 +26,15 @@
 
 多模态模型：
 
-| Model                  | MMLU | MMNU-Pro | ChartQA | DocVQA | OCRBench | AI2D | MathVista | MathVision | Vibe Eval(Reka) |
-| ---------------------- | ---- | -------- | ------- | ------ | -------- | ---- | --------- | ---------- | --------------- |
-| OpenAI o4 mini         | 81.6 |          |         |        |          |      | 84.4      |            |                 |
-| Gemini2.5 Flash        | 79.7 |          |         |        |          |      |           |            | 65.4            |
-| Gemini2.5 Pro          | 82   |          |         |        |          |      |           |            | 67.2            |
-| Claude Sonnet4         | 74.4 |          |         |        |          |      |           |            |                 |
-| Kimi VL 16b a2.8b 2506 | 64.0 | 46.3     |         |        |          |      | 80.1      | 56.9       |                 |
-| MiMo VL 7b RL          | 66.7 | 46.2     | 91.7    | 95.7   | 86.6     | 83.5 | 81.5      | 60.4       |                 |
+| Model                  | MMLU | MMNU-Pro | ChartQAPro | DocVQA | OCRBench | AI2D | MathVista | MathVision | Vibe Eval(Reka) |
+| ---------------------- | ---- | -------- | ---------- | ------ | -------- | ---- | --------- | ---------- | --------------- |
+| OpenAI o4 mini         | 81.6 |          |            |        |          |      | 84.4      |            |                 |
+| Gemini2.5 Flash        | 79.7 |          |            |        |          |      |           |            | 65.4            |
+| Gemini2.5 Pro          | 82   |          |            |        |          |      |           |            | 67.2            |
+| Claude Sonnet4         | 74.4 |          |            |        |          |      |           |            |                 |
+| Kimi VL 16b a2.8b 2506 | 64.0 | 46.3     |            |        |          |      | 80.1      | 56.9       |                 |
+| MiMo VL 7b RL          | 66.7 | 46.2     | 53.6       | 95.7   | 86.6     | 83.5 | 81.5      | 60.4       |                 |
+| GLM4.1V 9b Thinking    | 68.0 | 57.1     | 59.5       |        | 84.2     | 87.9 | 80.7      |            |                 |
 
 无审查模型：
 
