@@ -64,12 +64,14 @@
 1. Deepseek R1 0528 Qwen3 8b用于通用任务。
 2. Mimo VL 7b RL用于多模态任务。
 3. Dolphin3.0 Llama3 8b用于无审查任务。
+4. Ring Lite用于CPU推理。
 
 手机配置为骁龙8gen1+8g内存，使用MNN Chat。移动端部署情况如下：
 
 1. Qwen3 4b用于通用任务。
 2. Qwen2.5 vl 3b用于多模态任务。
 3. Qwen2.5 Omni 3b用于有语音输入的任务，TTS速度较慢。
+（考虑到内存带宽瓶颈，16g设备用Ring Lite比较合适，待Llama.cpp支持后也可以用Kimi VL）
 
 ##### api使用情况
 
@@ -78,9 +80,3 @@
 1. Deepseek api，使用Deepseek模型，因为其模型在开源模型中比较优秀，成本也不太高。
 2. Siliconflow api，以前Deepseek api繁忙时用于Deepseek模型，在Openrouter使用多账号策略后基本弃用。
 3. Openrouter api，主要使用免费模型，提供Dolphin3等无审查模型相比国内api也有优势。
-
-##### 使用体验
-
-1. 在编程任务上，Deepseek R1 0528在一些小型非3d的web项目和不少小型python项目有比较好的表现，其它编程语言未测试。
-2. 在对话和写作上，Deepseek R1以及其它对其进行蒸馏的模型解决了之前的模型过于形式化的问题，散文写作文学性也有提升。R1 0528的输出长度提升并且解决了小说写作中过度运用科技元素的问题，但仍然存在一定逻辑问题。
-3. 成本方面，个人偏向小型项目成本3元以内，Deepseek R1已经接近上限了，如果有比较好的小参数量模型还是会有一定优势。
