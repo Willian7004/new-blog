@@ -26,13 +26,14 @@
 
 多模态模型：
 
-| Model           | MMLU | MMNU-Pro | ChartQA | DocVQA | OCRBench | AI2D | MathVista | MathVision | Vibe Eval(Reka) |
-| --------------- | ---- | -------- | ------- | ------ | -------- | ---- | --------- | ---------- | --------------- |
-| OpenAI o4 mini  | 81.6 |          |         |        |          |      | 84.4      |            |                 |
-| Gemini2.5 Flash | 79.7 |          |         |        |          |      |           |            | 65.4            |
-| Gemini2.5 Pro   | 82   |          |         |        |          |      |           |            | 67.2            |
-| Claude Sonnet4  | 74.4 |          |         |        |          |      |           |            |                 |
-| MiMo VL 7b RL   | 66.7 | 46.2     | 91.7    | 95.7   | 86.6     | 83.5 | 81.5      | 60.4       |                 |
+| Model                      | MMLU | MMNU-Pro | ChartQA | DocVQA | OCRBench | AI2D | MathVista | MathVision | Vibe Eval(Reka) |
+| -------------------------- | ---- | -------- | ------- | ------ | -------- | ---- | --------- | ---------- | --------------- |
+| OpenAI o4 mini             | 81.6 |          |         |        |          |      | 84.4      |            |                 |
+| Gemini2.5 Flash            | 79.7 |          |         |        |          |      |           |            | 65.4            |
+| Gemini2.5 Pro              | 82   |          |         |        |          |      |           |            | 67.2            |
+| Claude Sonnet4             | 74.4 |          |         |        |          |      |           |            |                 |
+| Kimi VL 16b a2.8b thinking | 64.0 | 46.3     |         |        |          |      | 80.1      | 56.9       |                 |
+| MiMo VL 7b RL              | 66.7 | 46.2     | 91.7    | 95.7   | 86.6     | 83.5 | 81.5      | 60.4       |                 |
 
 无审查模型：
 
