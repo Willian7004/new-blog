@@ -1,7 +1,7 @@
 # Linux
 本文介绍了我使用的Linux发行版以及配置局域网服务器的情况。
 
-### 我使用的Linux发行版
+### 此前使用的Linux发行版
 
 我尝试过不少Linux发行版，最终选择了Linux Mint，有几个方面的原因：
 1. 在Ubuntu下游，N卡驱动、PPA以及Timeshift支持有优势。
@@ -12,23 +12,19 @@
 Linux Mint也有一些缺点：
 1. 软件不是最新，deb系这方面Debian Testing比较有优势，基本不需要使用Flatpak等方法安装比较新的软件。
 2. 系统自带的smb服务器功能存在权限问题，如果需要开源smb服务器推荐iStoreOS或者NAS系统。
-3. 外观不算顶尖，个人感觉外观最好的是Kali Linux的Gnome版本，轻量化系统外观最好的是Solus Linux的Budgie版本（由于这两个发行版相应桌面环境的图片不太常见，这里提供图片）。
-
-![kali](https://github.com/Willian7004/new-blog/blob/main/files/dynamic/kali.jpg?raw=true)
-![solus](https://github.com/Willian7004/new-blog/blob/main/files/dynamic/solus.jpg?raw=true)
-
-更新：
-
-Solus Linux的主题实际上是使用了materia主题包和papirus图标包，可以用于其它不少发行版，在Linux Mint安装的效果如下图，还是比Solus Linux差一些。
+3. 默认外观不算优秀。由于外观较好的Solus Linux的主题实际上是使用了materia主题包和papirus图标包，可以用于其它不少发行版，在Linux Mint安装了这一主题，效果如下图。
 
 <center class="half">
     <img src="https://github.com/Willian7004/new-blog/blob/main/files/dynamic/materia.jpg?raw=true" width="500"/>
 </center>
 
 基本配置和软件使用情况：
-1. 试过一些主题，但最后还是继续使用Mint-Y，因为细节和一致性较好且比较现代化。
-2. 浏览器使用Vivaldi，在低配设备流畅度高，同步功能比Firefox好用。
+1. 浏览器用过Vivaldi，在低配设备流畅度高，同步功能比Firefox好用，但由于安卓版缺少扩展功能以及用不到j1800主机而换回了Edge。
 3. 使用了Krita,LibreOffice和Inkscape等主流开源软件，游戏主要玩了画质相对较好的Openarena和SuperTuxKart。
+
+### 近期使用的Linux发行版
+
+考虑到有远程桌面需求，xrdp在手机基本不可用，kasmvnc画质差，pve的novnc等功能延时长，由于有用户反映Ubuntu24.04之后的远程桌面功能有较大优势，就改用最新的Ubuntu25.04。
 
 ### 局域网服务器配置
 
